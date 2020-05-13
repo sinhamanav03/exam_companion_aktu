@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'files.dart';
 
 void main() => runApp(MyApp());
 
@@ -134,8 +135,21 @@ class MyHomePage extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => NotesPage()));
+              if (title == 'Notes') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NotesPage(),
+                  ),
+                );
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => QuestionPaperPage(),
+                  ),
+                );
+              }
             },
           ),
           Align(
@@ -185,10 +199,13 @@ class NotesPage extends StatefulWidget {
 final List<String> subjectList = [
   '-------Select Subject-------',
   'Electronics Engineering',
-  'Theroy of automata and languages',
   'Microprocessor',
+  'Theroy of automata and languages',
+  'Operating System',
   'Technical Communication'
 ];
+
+bool _isVisible = false;
 String dropDownValue = subjectList[0];
 
 class _NotesPageState extends State<NotesPage> {
@@ -197,7 +214,6 @@ class _NotesPageState extends State<NotesPage> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // primarySwatch: Colors.white,
         scaffoldBackgroundColor: Colors.white,
       ),
       home: Scaffold(
@@ -216,7 +232,7 @@ class _NotesPageState extends State<NotesPage> {
             child: Container(
               padding: EdgeInsets.only(
                 left: 20,
-                top: 50,
+                top: 40,
                 right: 20,
               ),
               width: double.infinity,
@@ -235,9 +251,19 @@ class _NotesPageState extends State<NotesPage> {
                 children: <Widget>[
                   Align(
                     alignment: Alignment.topLeft,
-                    child: Icon(
-                      Icons.home,
-                      size: 30.0,
+                    child: FlatButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MyHomePage(),
+                          ),
+                        );
+                      },
+                      child: Icon(
+                        Icons.home,
+                        size: 30.0,
+                      ),
                     ),
                   ),
                   SizedBox(height: 30),
@@ -259,25 +285,7 @@ class _NotesPageState extends State<NotesPage> {
                     child: Row(
                       children: <Widget>[
                         Expanded(
-                          child: DropdownButton(
-                            items: subjectList
-                                .map<DropdownMenuItem<String>>((String value) {
-                              return DropdownMenuItem<String>(
-                                child: Text(value),
-                                value: value,
-                              );
-                            }).toList(),
-                            onChanged: (String newValue) {
-                              setState(
-                                () {
-                                  dropDownValue = newValue;
-                                },
-                              );
-                            },
-                            value: dropDownValue,
-                            underline: SizedBox(),
-                            icon: SvgPicture.asset('assets/icons/dropdown.svg'),
-                          ),
+                          child: buildDropdown(),
                         ),
                       ],
                     ),
@@ -291,8 +299,8 @@ class _NotesPageState extends State<NotesPage> {
           child: Container(
             child: Row(
               children: <Widget>[
-                buildExpandedTiles('1',true),
-                buildExpandedTiles('2',true),
+                buildExpandedTiles('1', _isVisible, 1),
+                buildExpandedTiles('2', _isVisible, 2),
               ],
             ),
           ),
@@ -301,8 +309,8 @@ class _NotesPageState extends State<NotesPage> {
           child: Container(
             child: Row(
               children: <Widget>[
-                buildExpandedTiles('3',true),
-                buildExpandedTiles('4',true),
+                buildExpandedTiles('3', _isVisible, 3),
+                buildExpandedTiles('4', _isVisible, 4),
               ],
             ),
           ),
@@ -311,8 +319,8 @@ class _NotesPageState extends State<NotesPage> {
           child: Container(
               child: Row(
             children: <Widget>[
-              buildExpandedTiles('5',true),
-              buildExpandedTiles('6',false),
+              buildExpandedTiles('5', _isVisible, 5),
+              buildExpandedTiles('6', false, 6),
             ],
           )),
         ),
@@ -321,13 +329,56 @@ class _NotesPageState extends State<NotesPage> {
     );
   }
 
-  Expanded buildExpandedTiles(String text,bool flag) => Expanded(
+  DropdownButton<String> buildDropdown() {
+    return DropdownButton(
+      items: subjectList.map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          child: Text(value),
+          value: value,
+        );
+      }).toList(),
+      onChanged: (String newValue) {
+        setState(
+          () {
+            dropDownValue = newValue;
+            _isVisible = (newValue == subjectList[0]) ? false : true;
+          },
+        );
+      },
+      value: dropDownValue,
+      underline: SizedBox(),
+      icon: SvgPicture.asset('assets/icons/dropdown.svg'),
+    );
+  }
+
+  String getUrl(int no) {
+    int index = (dropDownValue == subjectList[1])
+        ? 0
+        : (dropDownValue == subjectList[2])
+            ? 1
+            : (dropDownValue == subjectList[3])
+                ? 2
+                : (dropDownValue == subjectList[4])
+                    ? 3
+                    : (dropDownValue == subjectList[5]) ? 4 : -1;
+    if (index != -1) {
+      return subjects[index].files[no - 1].url;
+    }
+    return null;
+  }
+
+  Expanded buildExpandedTiles(String text, bool flag, int no) => Expanded(
         child: Visibility(
           visible: flag,
-                  child: Stack(
+          child: Stack(
             children: <Widget>[
               FlatButton(
-                onPressed: null,
+                onPressed: () {
+                  String url = getUrl(no);
+                  if (url != null) {
+                    _launchURL(url);
+                  }
+                },
                 child: Container(
                   margin: EdgeInsets.only(top: 10.0, bottom: 10.0),
                   decoration: BoxDecoration(
@@ -351,140 +402,253 @@ class _NotesPageState extends State<NotesPage> {
                 ),
               ),
               Positioned(
-                bottom:20,
-                left: 65,
-                child:Text("Unit-$text",
-                style: TextStyle(
-                  fontFamily: 'SourceSansPro',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20
-                ),)  
-              )
+                  bottom: 20,
+                  left: 65,
+                  child: Text(
+                    "Unit-$text",
+                    style: TextStyle(
+                        fontFamily: 'SourceSansPro',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20),
+                  ))
             ],
           ),
         ),
       );
 
-  Padding buildListTile(String text) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: ListTile(
-        leading: Icon(
-          Icons.assignment,
-          size: 30.0,
-          color: Colors.white70,
-        ),
-
-        // contentPadding: EdgeInsets.all(20.0),
-        title: Text(
-          text,
-          style: TextStyle(fontSize: 30.0, color: Colors.white70),
-        ),
-        onTap: () {
-          setState(() {
-            _launchURL();
-          });
-        },
-      ),
-    );
-  }
-
-  _launchURL() async {
-    const url = 'https://flutter.dev';
+  _launchURL(String localUrl) async {
+    String url = localUrl;
     if (await canLaunch(url)) {
       await launch(url);
     } else {
       throw 'Could not launch $url';
     }
   }
-
-  Padding buildDropdown() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(40, 30, 20, 20),
-      child: DropdownButton<String>(
-          autofocus: true,
-          elevation: 10,
-          focusColor: Colors.amber,
-          dropdownColor: Colors.black87,
-          iconSize: 40.0,
-          items: subjectList.map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              child: Text(value),
-              value: value,
-            );
-          }).toList(),
-          value: dropDownValue,
-          style: TextStyle(color: Colors.white70),
-          onChanged: (String newValue) {
-            setState(() {
-              dropDownValue = newValue;
-            });
-          }),
-    );
-  }
 }
 
-// return Column(
-//   crossAxisAlignment: CrossAxisAlignment.center,
-//   children: <Widget>[
-//     buildDropdown(),
-//     buildListTile("Unit - 1"),
-//     buildListTile("Unit - 2"),
-//     buildListTile("Unit - 3"),
-//     buildListTile("Unit - 4"),
-//     buildListTile("Unit - 5"),
-//   ],
-// );
+class QuestionPaperPage extends StatefulWidget {
+  @override
+  _QuestionPaperPageState createState() => _QuestionPaperPageState();
+}
 
-// Column(
-//           mainAxisAlignment: MainAxisAlignment.start,
-//           children: <Widget>[
-//             Padding(
-//               padding: const EdgeInsets.all(8.0),
-//               child: ListTile(
-//                 contentPadding: EdgeInsets.all(16.0),
-//                 leading: Icon(Icons.assignment),
-//                 title: Text(
-//                   "Notes Section",
-//                   style: TextStyle(
-//                     fontSize: 24.0,
-//                   ),
-//                 ),
-//                 onTap: () {
-//                   Navigator.push(
-//                     context,
-//                     MaterialPageRoute(
-//                       builder: (context) => NotesPage(),
-//                     ),
-//                   );
-//                 },
-//               ),
-//             ),
-//             Padding(
-//               padding: const EdgeInsets.all(8.0),
-//               child: ListTile(
-//                 contentPadding: EdgeInsets.all(16.0),
-//                 leading: Icon(Icons.account_balance),
-//                 title: Text(
-//                   "Previous Year Question",
-//                   style: TextStyle(
-//                     fontSize: 24.0,
-//                   ),
-//                 ),
-//               ),
-//             ),
-//             Padding(
-//               padding: const EdgeInsets.all(8.0),
-//               child: ListTile(
-//                 contentPadding: EdgeInsets.all(16.0),
-//                 leading: Icon(Icons.assignment),
-//                 title: Text(
-//                   "Notice",
-//                   style: TextStyle(
-//                     fontSize: 24.0,
-//                   ),
-//                 ),
-//               ),
-//             ),
-//           ],
-//         ),
+class _QuestionPaperPageState extends State<QuestionPaperPage> {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        scaffoldBackgroundColor: Colors.white,
+      ),
+      home: Scaffold(
+        body: bulitPaperPageBody(),
+      ),
+    );
+  }
+
+  Widget bulitPaperPageBody() {
+    return Column(
+      children: <Widget>[
+        Expanded(
+          flex: 2,
+          child: ClipPath(
+            clipper: MyClipper(),
+            child: Container(
+              padding: EdgeInsets.only(
+                left: 20,
+                top: 40,
+                right: 20,
+              ),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomLeft,
+                  colors: [
+                    Color(0xFFFF6F00),
+                    Color(0xFF1124),
+                  ],
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: FlatButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MyHomePage(),
+                          ),
+                        );
+                      },
+                      child: Icon(
+                        Icons.home,
+                        size: 30.0,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 30),
+                  Container(
+                    margin: EdgeInsets.symmetric(
+                      horizontal: 10.0,
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 12.0),
+                    height: 65.0,
+                    width: double.infinity,
+                    // color:Colors.white,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(25.0),
+                      border: Border.all(
+                        color: Color(0xFFE5E5E5),
+                      ),
+                    ),
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: buildDropdown(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Container(
+            child: Row(
+              children: <Widget>[
+                buildExpandedTiles('1', _isVisible, 1),
+                // buildExpandedTiles('2', false, 2),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: Container(
+            child: Row(
+              children: <Widget>[
+                buildExpandedTiles('2', _isVisible, 3),
+                // buildExpandedTiles('4', false, 4),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: Container(
+              child: Row(
+            children: <Widget>[
+              //buildExpandedTiles('5', false, 5),
+              // buildExpandedTiles('6', false, 6),
+            ],
+          )),
+        ),
+        Expanded(child: Container())
+      ],
+    );
+  }
+
+  DropdownButton<String> buildDropdown() {
+    return DropdownButton(
+      items: subjectList.map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          child: Text(value),
+          value: value,
+        );
+      }).toList(),
+      onChanged: (String newValue) {
+        setState(
+          () {
+            dropDownValue = newValue;
+            _isVisible = (newValue == subjectList[0]) ? false : true;
+          },
+        );
+      },
+      value: dropDownValue,
+      underline: SizedBox(),
+      icon: SvgPicture.asset('assets/icons/dropdown.svg'),
+    );
+  }
+
+  String getUrl(int no) {
+    int index = (dropDownValue == subjectList[1])
+        ? 0
+        : (dropDownValue == subjectList[2])
+            ? 1
+            : (dropDownValue == subjectList[3])
+                ? 2
+                : (dropDownValue == subjectList[4])
+                    ? 3
+                    : (dropDownValue == subjectList[5]) ? 4 : -1;
+    if (index == 0) {
+      return 'https://drive.google.com/open?id=1qebS52kGU2SD0BxLsirGeIswOwocVjUO';
+    }else if( index == 1 ){
+      return 'https://drive.google.com/open?id=1R1RM5tuBsJRcGTs5EKvj-PeMfcv0pZnr';
+    } else if(index!=-1){
+      return 'https://drive.google.com/open?id=1R1RM5tuBsJRcGTs5EKvj-PeMfcv0pZnr';
+    }
+    return null;
+  }
+
+  Expanded buildExpandedTiles(String text, bool flag, int no) => Expanded(
+        child: Visibility(
+          visible: flag,
+          child: Stack(
+            children: <Widget>[
+              FlatButton(
+                onPressed: () {
+                  String url = getUrl(no);
+                  if (url != null) {
+                    _launchURL(url);
+                  }
+                },
+                child: Container(
+                  margin: EdgeInsets.only(top: 10.0, bottom: 10.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(25.0),
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 33,
+                        offset: Offset(0, 10),
+                        color: Color(0xFFD3D3D3).withOpacity(.84),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.topCenter,
+                child: SvgPicture.asset(
+                  'assets/icons/paper.svg',
+                  height: 100.0,
+                ),
+              ),
+              Positioned(
+                  bottom: 20,
+                  left: 100,
+                  child: Text(
+                    "Question Paper-$text",
+                    style: TextStyle(
+                        fontFamily: 'SourceSansPro',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20),
+                  ))
+            ],
+          ),
+        ),
+      );
+
+  _launchURL(String localUrl) async {
+    String url = localUrl;
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+}
