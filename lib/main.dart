@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -97,9 +96,10 @@ class MyHomePage extends StatelessWidget {
               ),
               child: Row(
                 children: <Widget>[
-                  buildExpandedNode('notes2', 'Notes','',context),
+                  buildExpandedNode('notes2', 'Notes', '', context),
                   SizedBox(width: 20),
-                  buildExpandedNode('notes', 'Previous year Papers','',context),
+                  buildExpandedNode(
+                      'notes', 'Previous year Papers', '', context),
                 ],
               ),
             ),
@@ -113,7 +113,8 @@ class MyHomePage extends StatelessWidget {
     );
   }
 
-  Expanded buildExpandedNode(String icon, String title,String page,BuildContext context) {
+  Expanded buildExpandedNode(
+      String icon, String title, String page, BuildContext context) {
     return Expanded(
       child: Stack(
         children: <Widget>[
@@ -133,9 +134,8 @@ class MyHomePage extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              Navigator.push(
-                context,MaterialPageRoute(builder: (context) =>NotesPage())
-              );
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => NotesPage()));
             },
           ),
           Align(
@@ -177,64 +177,6 @@ class MyClipper extends CustomClipper<Path> {
   }
 }
 
-// class MyHomePage extends StatefulWidget {
-//   MyHomePage({Key key, this.title}) : super(key: key);
-//   final String title;
-//   @override
-//   _MyHomePageState createState() => _MyHomePageState();
-// }
-
-// class _MyHomePageState extends State<MyHomePage> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(widget.title),
-//       ),
-//       body: Row(
-//         children: <Widget>[
-//           buildContainer(),
-//           buildContainer(),
-//         ],
-//       ),
-//     );
-//   }
-
-//   Widget buildContainer() {
-//     return Expanded(
-//       flex: 1,
-//       child: Container(
-//         padding: EdgeInsets.all(8.0),
-//         margin: EdgeInsets.all(12.0),
-//         child: Center(
-//           child: RichText(
-//             text: TextSpan(
-//                 text: '123',
-//                 style: TextStyle(
-//                   fontWeight: FontWeight.bold,
-//                   color: Colors.black,
-//                   fontSize: 20.0,
-//                 )),
-//           ),
-//         ),
-//         decoration: BoxDecoration(
-//           color: Colors.white,
-//           borderRadius: BorderRadius.circular(10.0),
-//           boxShadow: <BoxShadow>[
-//             BoxShadow(
-//               color: Colors.black,
-//               blurRadius: 50.0,
-//               spreadRadius: 2.0,
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-
-//   NotesPage buildNotesPage() => new NotesPage();
-// }
-
 class NotesPage extends StatefulWidget {
   @override
   _NotesPageState createState() => _NotesPageState();
@@ -255,16 +197,10 @@ class _NotesPageState extends State<NotesPage> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        // primarySwatch: Colors.white,
+        scaffoldBackgroundColor: Colors.white,
       ),
       home: Scaffold(
-        backgroundColor: Colors.black54,
-        appBar: AppBar(
-          title: Text(
-            "Notes Section",
-            textAlign: TextAlign.justify,
-          ),
-        ),
         body: bulitNotesPageBody(),
       ),
     );
@@ -272,17 +208,162 @@ class _NotesPageState extends State<NotesPage> {
 
   Widget bulitNotesPageBody() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        buildDropdown(),
-        buildListTile("Unit - 1"),
-        buildListTile("Unit - 2"),
-        buildListTile("Unit - 3"),
-        buildListTile("Unit - 4"),
-        buildListTile("Unit - 5"),
+        Expanded(
+          flex: 2,
+          child: ClipPath(
+            clipper: MyClipper(),
+            child: Container(
+              padding: EdgeInsets.only(
+                left: 20,
+                top: 50,
+                right: 20,
+              ),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomLeft,
+                  colors: [
+                    Color(0xFFFF6F00),
+                    Color(0xFF1124),
+                  ],
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Icon(
+                      Icons.home,
+                      size: 30.0,
+                    ),
+                  ),
+                  SizedBox(height: 30),
+                  Container(
+                    margin: EdgeInsets.symmetric(
+                      horizontal: 10.0,
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 12.0),
+                    height: 65.0,
+                    width: double.infinity,
+                    // color:Colors.white,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(25.0),
+                      border: Border.all(
+                        color: Color(0xFFE5E5E5),
+                      ),
+                    ),
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: DropdownButton(
+                            items: subjectList
+                                .map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                child: Text(value),
+                                value: value,
+                              );
+                            }).toList(),
+                            onChanged: (String newValue) {
+                              setState(
+                                () {
+                                  dropDownValue = newValue;
+                                },
+                              );
+                            },
+                            value: dropDownValue,
+                            underline: SizedBox(),
+                            icon: SvgPicture.asset('assets/icons/dropdown.svg'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Container(
+            child: Row(
+              children: <Widget>[
+                buildExpandedTiles('1',true),
+                buildExpandedTiles('2',true),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: Container(
+            child: Row(
+              children: <Widget>[
+                buildExpandedTiles('3',true),
+                buildExpandedTiles('4',true),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: Container(
+              child: Row(
+            children: <Widget>[
+              buildExpandedTiles('5',true),
+              buildExpandedTiles('6',false),
+            ],
+          )),
+        ),
+        Expanded(child: Container())
       ],
     );
   }
+
+  Expanded buildExpandedTiles(String text,bool flag) => Expanded(
+        child: Visibility(
+          visible: flag,
+                  child: Stack(
+            children: <Widget>[
+              FlatButton(
+                onPressed: null,
+                child: Container(
+                  margin: EdgeInsets.only(top: 10.0, bottom: 10.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(25.0),
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 33,
+                        offset: Offset(0, 10),
+                        color: Color(0xFFD3D3D3).withOpacity(.84),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.topCenter,
+                child: SvgPicture.asset(
+                  'assets/icons/paper.svg',
+                  height: 100.0,
+                ),
+              ),
+              Positioned(
+                bottom:20,
+                left: 65,
+                child:Text("Unit-$text",
+                style: TextStyle(
+                  fontFamily: 'SourceSansPro',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20
+                ),)  
+              )
+            ],
+          ),
+        ),
+      );
 
   Padding buildListTile(String text) {
     return Padding(
@@ -342,6 +423,18 @@ class _NotesPageState extends State<NotesPage> {
     );
   }
 }
+
+// return Column(
+//   crossAxisAlignment: CrossAxisAlignment.center,
+//   children: <Widget>[
+//     buildDropdown(),
+//     buildListTile("Unit - 1"),
+//     buildListTile("Unit - 2"),
+//     buildListTile("Unit - 3"),
+//     buildListTile("Unit - 4"),
+//     buildListTile("Unit - 5"),
+//   ],
+// );
 
 // Column(
 //           mainAxisAlignment: MainAxisAlignment.start,
