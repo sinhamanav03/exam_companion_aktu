@@ -584,12 +584,8 @@ class _QuestionPaperPageState extends State<QuestionPaperPage> {
                 : (dropDownValue == subjectList[4])
                     ? 3
                     : (dropDownValue == subjectList[5]) ? 4 : -1;
-    if (index == 0) {
-      return 'https://drive.google.com/open?id=1qebS52kGU2SD0BxLsirGeIswOwocVjUO';
-    }else if( index == 1 ){
-      return 'https://drive.google.com/open?id=1R1RM5tuBsJRcGTs5EKvj-PeMfcv0pZnr';
-    } else if(index!=-1){
-      return 'https://drive.google.com/open?id=1R1RM5tuBsJRcGTs5EKvj-PeMfcv0pZnr';
+    if (index != -1) {
+      return questionPprUrl[index];
     }
     return null;
   }
